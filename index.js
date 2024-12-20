@@ -4,6 +4,7 @@
 
 const {
   S3Client,
+  HeadBucketCommand,
   CreateBucketCommand,
   PutObjectCommand,
   DeleteObjectCommand,
@@ -112,13 +113,18 @@ class S3Adapter {
     }
 
     try {
-      await this._s3Client.send(new CreateBucketCommand({ Bucket: this._bucket }));
+      await this._s3Client.send(new HeadBucketCommand({ Bucket: this._bucket }));
       this._hasBucket = true;
-    } catch (error) {
-      if (error.name === 'BucketAlreadyExists' || error.name === 'BucketAlreadyOwnedByYou') {
+    } catch {
+      try {
+        await this._s3Client.send(new CreateBucketCommand({ Bucket: this._bucket }));
         this._hasBucket = true;
-      } else {
-        throw error;
+      } catch (error) {
+        if (error.name === 'BucketAlreadyExists' || error.name === 'BucketAlreadyOwnedByYou') {
+          this._hasBucket = true;
+        } else {
+          throw error;
+        }
       }
     }
   }
