@@ -115,8 +115,9 @@ class S3Adapter {
       await this._s3Client.send(new CreateBucketCommand({ Bucket: this._bucket }));
       this._hasBucket = true;
     } catch (error) {
-      if (error.name === 'BucketAlreadyOwnedByYou') { this._hasBucket = true; }
-      else {
+      if (error.name === 'BucketAlreadyExists' || error.name === 'BucketAlreadyOwnedByYou') {
+        this._hasBucket = true;
+      } else {
         throw error;
       }
     }
